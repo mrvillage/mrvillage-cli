@@ -2,6 +2,7 @@ use std::path::Path;
 
 use include_dir::{Dir, File};
 use tempfile::tempdir;
+use xshell::{cmd, Shell};
 
 use crate::utils::template::flatten_dir;
 
@@ -12,6 +13,7 @@ pub struct Template {
     pub name: &'static str,
     pub dir: Dir<'static>,
     pub config_files: &'static [ConfigFileWrapper],
+    pub git: bool,
 }
 
 impl Template {
@@ -53,6 +55,11 @@ impl Template {
         }
         for i in self.config_files.iter() {
             i.file.write(dir_path)?;
+        }
+        if self.git {
+            let sh = Shell::new()?;
+            sh.change_dir(dir_path);
+            cmd!(sh, "git init").quiet().run()?;
         }
         Ok(())
     }

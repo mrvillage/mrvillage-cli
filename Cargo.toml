@@ -8,6 +8,7 @@ anyhow = "1.0"
 include_dir = "0.7"
 thiserror = "1.0"
 tempfile = "3.3"
+xshell = "0.2"
 
 [dependencies.clap]
 version = "4.0"

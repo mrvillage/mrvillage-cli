@@ -11,4 +11,5 @@ pub static ADVENT_OF_CODE_2022_RUST_CONFIG: Template = Template {
         ConfigFileWrapper::new("", &CLIPPY_CONFIG),
         ConfigFileWrapper::new("", &RUSTFMT_CONFIG),
     ],
+    git: true,
 };
