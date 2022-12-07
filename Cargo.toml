@@ -13,3 +13,7 @@ xshell = "0.2"
 [dependencies.clap]
 version = "4.0"
 features = ["derive"]
+
+[[bin]]
+name = "mrvillage"
+path = "src/main.rs"

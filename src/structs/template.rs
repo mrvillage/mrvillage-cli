@@ -2,9 +2,9 @@ use std::path::Path;
 
 use include_dir::{Dir, File};
 use tempfile::tempdir;
-use xshell::{cmd, Shell};
+use xshell::Shell;
 
-use crate::utils::template::flatten_dir;
+use crate::{quiet_cmd, utils::template::flatten_dir};
 
 use super::config_file::ConfigFileWrapper;
 
@@ -59,7 +59,7 @@ impl Template {
         if self.git {
             let sh = Shell::new()?;
             sh.change_dir(dir_path);
-            cmd!(sh, "git init").quiet().run()?;
+            quiet_cmd!(sh, "git init").run()?;
         }
         Ok(())
     }
