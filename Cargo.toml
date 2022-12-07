@@ -1,0 +1,14 @@
+[package]
+name = "mrvillage-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+include_dir = "0.7"
+thiserror = "1.0"
+tempfile = "3.3"
+
+[dependencies.clap]
+version = "4.0"
+features = ["derive"]
