@@ -1,6 +1,6 @@
 use crate::{include_config_file, structs::config_file::ConfigFile};
 
-pub static PRETTIERRC: ConfigFile =
+pub const PRETTIERRC: ConfigFile =
     ConfigFile::new(".prettierrc", include_config_file!(".prettierrc"));
 
 pub const REMIX_ESLINTRC: ConfigFile = ConfigFile::new(
