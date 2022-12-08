@@ -1,0 +1,11 @@
+Required parameters
+- app-name
+- api-domain
+- meta-tags-name
+- meta-tags-description
+- primary-color
+
+Required template files
+- .prettierrc.toml
+- remix.eslintrc.json
+- default-mrvillage.toml

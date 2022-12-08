@@ -6,23 +6,29 @@ use xshell::Shell;
 
 use crate::{quiet_cmd, utils::template::flatten_dir};
 
-use super::config_file::ConfigFileWrapper;
+use super::template_file::TemplateFileWrapper;
 
 #[derive(Debug)]
 pub struct Template {
     pub name: &'static str,
     pub dir: Dir<'static>,
-    pub config_files: &'static [ConfigFileWrapper],
+    pub config_files: &'static [TemplateFileWrapper],
     pub git: bool,
 }
 
 impl Template {
-    pub fn write(&self, dir: &Path, interpolator: impl Fn(&str) -> String) -> anyhow::Result<()> {
+    pub fn write(
+        &self,
+        dir: &Path,
+        interpolator: impl Fn(&str) -> String,
+        git: Option<bool>,
+    ) -> anyhow::Result<()> {
+        let git = git.unwrap_or(self.git);
         if dir.exists() {
             return Err(anyhow::anyhow!("That directory already exists!"));
         }
         let temp_dir = tempdir()?;
-        let res = self.write_files(temp_dir.path(), &interpolator);
+        let res = self.write_files(temp_dir.path(), &interpolator, git);
         if let Err(e) = res {
             temp_dir.close()?;
             Err(e)
@@ -38,6 +44,7 @@ impl Template {
         &self,
         dir_path: &Path,
         interpolator: &impl Fn(&str) -> String,
+        git: bool,
     ) -> anyhow::Result<()> {
         let dirs = flatten_dir(&self.dir);
         for i in dirs.iter() {
@@ -54,9 +61,10 @@ impl Template {
             }
         }
         for i in self.config_files.iter() {
-            i.file.write(dir_path)?;
+            let content = interpolator(i.file.content);
+            i.file.write(dir_path, content)?;
         }
-        if self.git {
+        if git {
             let sh = Shell::new()?;
             sh.change_dir(dir_path);
             quiet_cmd!(sh, "git init").run()?;

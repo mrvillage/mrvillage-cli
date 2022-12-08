@@ -1,0 +1,20 @@
+# flyctl launch added from .gitignore
+**\node_modules
+
+.cache
+functions\[\[path\]\].js
+functions\[\[path\]\].js.map
+public\build
+**\.env
+
+pb_data
+**\pocketbase.exe
+
+# flyctl launch added from .pytest_cache\.gitignore
+# Created by pytest automatically.
+.pytest_cache\**\*
+
+# don't need web stuff for pocketbase
+public/**
+app/**
+functions/**

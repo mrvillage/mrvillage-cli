@@ -1,4 +1,4 @@
-// @@-cli-remix-config@@
+// @@-cli.remix-eslintrc-@@
 {
   "env": {
     "browser": true,
