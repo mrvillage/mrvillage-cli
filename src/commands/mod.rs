@@ -1,7 +1,7 @@
 mod projects;
 mod run;
 
-use std::{process::Command, time::Duration};
+use std::process::Command;
 
 use anyhow::Context;
 use clap::Subcommand;
