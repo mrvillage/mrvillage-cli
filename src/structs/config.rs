@@ -1,4 +1,7 @@
-use std::collections::{HashMap, VecDeque};
+use std::{
+    collections::{HashMap, VecDeque},
+    path::PathBuf,
+};
 
 use serde::Deserialize;
 
@@ -6,31 +9,48 @@ use crate::{consts::template_files::MRVILLAGE_CONFIG, traits::merge::Merge};
 
 #[derive(Clone, Deserialize)]
 pub struct Config {
+    #[serde(default)]
     pub ssh: Ssh,
 }
 
 impl Config {
     pub fn load() -> Self {
-        let mut global_config = Config::load_global();
-        let mut configs = VecDeque::new();
-        let mut dir = std::env::current_dir().unwrap();
-        loop {
-            let mut path = dir.clone();
-            path.push(".mrvillage.toml");
-            if path.exists() {
-                configs.push_front(Self::read_from_file(&path));
-            }
-            if !dir.pop() {
-                break;
-            }
-        }
+        let mut global_config = Self::load_global();
+        let mut configs = Self::configs();
         while let Some(config) = configs.pop_front() {
             global_config.merge(&config);
         }
         global_config
     }
 
-    fn load_global() -> Self {
+    // closest to the front of the queue are at the lowest point in the hierarchy, i.e. have least precedence when determining attributes
+    pub fn config_paths() -> VecDeque<PathBuf> {
+        let mut paths = VecDeque::new();
+        let mut dir = std::env::current_dir().unwrap();
+        loop {
+            let mut path = dir.clone();
+            path.push(".mrvillage.toml");
+            if path.exists() {
+                paths.push_front(path);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+        paths
+    }
+
+    // closest to the front of the queue are at the lowest point in the hierarchy, i.e. have least precedence when determining attributes
+    pub fn configs() -> VecDeque<Config> {
+        let mut configs = VecDeque::new();
+        let mut paths = Self::config_paths();
+        while let Some(path) = paths.pop_back() {
+            configs.push_front(Self::read_from_file(&path));
+        }
+        configs
+    }
+
+    pub fn global_path() -> PathBuf {
         let mut path = dirs::home_dir().unwrap();
         path.push(".mrvillage");
         if !path.exists() {
@@ -38,11 +58,13 @@ impl Config {
         }
         path.push("config.toml");
         if !path.exists() {
-            MRVILLAGE_CONFIG
-                .write(&path, MRVILLAGE_CONFIG.content.to_string())
-                .unwrap();
+            std::fs::write(&path, MRVILLAGE_CONFIG.content).unwrap();
         }
-        Self::read_from_file(&path)
+        path
+    }
+
+    pub fn load_global() -> Self {
+        Self::read_from_file(&Self::global_path())
     }
 
     fn read_from_file(path: &std::path::PathBuf) -> Self {
@@ -57,8 +79,9 @@ impl Merge<'_> for Config {
     }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Default, Deserialize)]
 pub struct Ssh {
+    #[serde(default)]
     pub hosts: HashMap<String, Host>,
 }
 
@@ -77,16 +100,22 @@ impl Merge<'_> for Ssh {
 #[derive(Clone, Deserialize)]
 pub struct Host {
     pub host: std::net::IpAddr,
-    pub port: Option<u16>,
+    #[serde(default = "Host::default_port")]
+    pub port: u16,
     pub user: String,
+    pub root_password: Option<String>,
+}
+
+impl Host {
+    fn default_port() -> u16 {
+        22
+    }
 }
 
 impl Merge<'_> for Host {
     fn merge(&mut self, other: &Self) {
         self.host = other.host;
-        if let Some(port) = other.port {
-            self.port = Some(port);
-        }
+        self.port = other.port;
         self.user = other.user.clone();
     }
 }

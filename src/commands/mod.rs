@@ -1,3 +1,4 @@
+mod config;
 mod projects;
 mod run;
 
@@ -21,13 +22,17 @@ pub enum Commands {
         #[arg(short, long)]
         commands: Vec<String>,
     },
+    #[command(about = "Set config attributes")]
+    #[command(subcommand)]
+    Config(config::Commands),
 }
 
 impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
-            Self::Projects(projects) => projects.handle(),
-            Self::Run(run) => run.handle(),
+            Self::Projects(c) => c.handle(),
+            Self::Run(c) => c.handle(),
+            Self::Config(c) => c.handle(),
             Self::Parallel { commands } => {
                 if commands.is_empty() {
                     return Err(anyhow::anyhow!("No commands provided"));
