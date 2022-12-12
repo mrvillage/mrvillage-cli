@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use include_dir::{Dir, File};
 use tempfile::tempdir;
@@ -19,10 +19,11 @@ pub struct Template {
 impl Template {
     pub fn write(
         &self,
-        dir: &Path,
+        dir: PathBuf,
         interpolator: impl Fn(&str) -> String,
         git: Option<bool>,
     ) -> anyhow::Result<()> {
+        println!("Creating {} project in {}", self.name, dir.display());
         let git = git.unwrap_or(self.git);
         if dir.exists() {
             return Err(anyhow::anyhow!("That directory already exists!"));

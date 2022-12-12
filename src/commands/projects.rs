@@ -76,7 +76,7 @@ impl Handle for Commands {
                         format!("{}/day-{}", std::env::current_dir().unwrap().display(), day)
                     };
                     crate::consts::template::ADVENT_OF_CODE_2022_RUST.write(
-                        std::path::Path::new(&dir),
+                        std::path::Path::new(&dir).to_path_buf(),
                         |i| {
                             i.replace(
                                 var_name!("crate-name"),
@@ -87,12 +87,12 @@ impl Handle for Commands {
                     )
                 },
                 Templates::RustBin { name, dir } => crate::consts::template::RUST_BIN.write(
-                    std::path::Path::new(&dir.dir),
+                    std::path::Path::new(&dir.dir).join(name),
                     |i| i.replace(var_name!("crate-name"), name.as_str()),
                     dir.git,
                 ),
                 Templates::RustLib { name, dir } => crate::consts::template::RUST_LIB.write(
-                    std::path::Path::new(&dir.dir),
+                    std::path::Path::new(&dir.dir).join(name),
                     |i| i.replace(var_name!("crate-name"), name.as_str()),
                     dir.git,
                 ),
@@ -104,7 +104,7 @@ impl Handle for Commands {
                     meta_description,
                     color,
                 } => crate::consts::template::REMIX_PAGES.write(
-                    std::path::Path::new(&dir.dir),
+                    std::path::Path::new(&dir.dir).join(name),
                     |i| {
                         i.replace(var_name!("app-name"), name.as_str())
                             .replace(var_name!("api-domain"), api_domain.as_str())
