@@ -1,6 +1,6 @@
 use clap::Subcommand;
 
-use crate::traits::handle::Handle;
+use crate::{ssh_cmd, structs::config::Config, traits::handle::Handle};
 
 #[derive(Debug, Subcommand)]
 pub enum Actions {
@@ -23,7 +23,10 @@ impl Handle for Actions {
                 production: _,
                 staging: _,
             } => {
-                // TODO: implement .mrvillage directory and allow storing IPs for servers or see if the libssh-rs crate is safe and figure out how to use it instead
+                let config = Config::load();
+                let host = config.ssh.hosts.get("pnw-test").unwrap();
+                println!("s");
+                println!("{}", ssh_cmd!(host, "echo 1").unwrap());
                 Ok(())
             },
         }

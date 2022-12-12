@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use crate::{consts::template_files::MRVILLAGE_CONFIG, traits::merge::Merge};
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub ssh: Ssh,
@@ -79,7 +79,7 @@ impl Merge<'_> for Config {
     }
 }
 
-#[derive(Clone, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct Ssh {
     #[serde(default)]
     pub hosts: HashMap<String, Host>,
@@ -97,24 +97,36 @@ impl Merge<'_> for Ssh {
     }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Host {
-    pub host: std::net::IpAddr,
+    pub ip: std::net::IpAddr,
     #[serde(default = "Host::default_port")]
     pub port: u16,
     pub user: String,
     pub root_password: Option<String>,
+    #[serde(default = "Host::default_forward_agent")]
+    pub forward_agent: bool,
 }
 
 impl Host {
+    #[inline(always)]
     fn default_port() -> u16 {
         22
+    }
+
+    #[inline(always)]
+    fn default_forward_agent() -> bool {
+        false
+    }
+
+    pub fn connection_string(&self) -> String {
+        format!("{}@{}", self.user, self.ip)
     }
 }
 
 impl Merge<'_> for Host {
     fn merge(&mut self, other: &Self) {
-        self.host = other.host;
+        self.ip = other.ip;
         self.port = other.port;
         self.user = other.user.clone();
     }
