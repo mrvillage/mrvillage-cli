@@ -13,7 +13,7 @@ impl Handle for Commands {
         match self {
             Self::Where => {
                 let global_path = Config::global_path();
-                let mut configs = Config::config_paths();
+                let mut configs = Config::config_paths(std::env::current_dir()?);
                 let mut buffer = String::new();
                 let mut ticker = 0;
                 writeln!(buffer, "The following configuration files are being used to build the configuration used when running commands in this directory.")?;

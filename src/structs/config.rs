@@ -6,6 +6,7 @@ use std::{
 
 use anyhow::Result;
 use serde::Deserialize;
+use toml::Value;
 
 use crate::{consts::template_files::MRVILLAGE_CONFIG, traits::merge::Merge};
 
@@ -13,22 +14,27 @@ use crate::{consts::template_files::MRVILLAGE_CONFIG, traits::merge::Merge};
 pub struct Config {
     #[serde(default)]
     pub ssh: Ssh,
+    #[serde(default)]
+    pub templates: Templates,
 }
 
 impl Config {
-    pub fn load() -> Self {
-        let mut global_config = Self::load_global();
-        let mut configs = Self::configs();
-        while let Some(config) = configs.pop_front() {
-            global_config.merge(&config);
+    pub fn load() -> Result<Self> {
+        Self::load_from_dir(std::env::current_dir()?)
+    }
+
+    pub fn load_from_dir(dir: PathBuf) -> Result<Self> {
+        let mut config = Self::load_global();
+        let mut configs = Self::configs(dir);
+        while let Some(c) = configs.pop_front() {
+            config.merge(&c);
         }
-        global_config
+        Ok(config)
     }
 
     // closest to the front of the queue are at the lowest point in the hierarchy, i.e. have least precedence when determining attributes
-    pub fn config_paths() -> VecDeque<PathBuf> {
+    pub fn config_paths(mut dir: PathBuf) -> VecDeque<PathBuf> {
         let mut paths = VecDeque::new();
-        let mut dir = std::env::current_dir().unwrap();
         loop {
             let mut path = dir.clone();
             path.push(".mrvillage.toml");
@@ -43,9 +49,9 @@ impl Config {
     }
 
     // closest to the front of the queue are at the lowest point in the hierarchy, i.e. have least precedence when determining attributes
-    pub fn configs() -> VecDeque<Config> {
+    pub fn configs(dir: PathBuf) -> VecDeque<Config> {
         let mut configs = VecDeque::new();
-        let mut paths = Self::config_paths();
+        let mut paths = Self::config_paths(dir);
         while let Some(path) = paths.pop_back() {
             configs.push_front(Self::read_from_file(&path));
         }
@@ -78,6 +84,7 @@ impl Config {
 impl Merge<'_> for Config {
     fn merge(&mut self, other: &Self) {
         self.ssh.merge(&other.ssh);
+        self.templates.merge(&other.templates);
     }
 }
 
@@ -161,5 +168,18 @@ impl Merge<'_> for Host {
         self.ip = other.ip;
         self.port = other.port;
         self.user = other.user.clone();
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct Templates {
+    pub vars: HashMap<String, Value>,
+}
+
+impl Merge<'_> for Templates {
+    fn merge(&mut self, other: &Self) {
+        for (k, v) in &other.vars {
+            self.vars.insert(k.clone(), v.to_string().into());
+        }
     }
 }

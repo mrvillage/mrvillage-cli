@@ -1,16 +1,25 @@
+use std::path::Path;
+
 use clap::{Args, Subcommand};
 
-use crate::{traits::handle::Handle, var_name};
+use crate::{
+    consts::template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
+    traits::handle::Handle,
+    var_name,
+};
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    #[command(about = "Create a project")]
+    #[command(about = "Use a template")]
     #[command(subcommand)]
-    New(Templates),
+    New(TemplatesNew),
+    #[command(about = "Update files from a template")]
+    #[command(subcommand)]
+    Update(TemplatesUpdate),
 }
 
 #[derive(Debug, Subcommand)]
-pub enum Templates {
+pub enum TemplatesNew {
     #[command(about = "Create a new project with the Advent of Code 2022 Rust template")]
     #[command(name = "aoc22-rs")]
     AdventOfCode2022Rust {
@@ -54,6 +63,38 @@ pub enum Templates {
     },
 }
 
+#[derive(Debug, Subcommand)]
+pub enum TemplatesUpdate {
+    #[command(about = "Update clippy.toml files")]
+    Clippy {
+        #[arg(short, long, default_value = "false")]
+        recurse: bool,
+        #[command(flatten)]
+        dir: HasDir,
+    },
+    #[command(about = "Update .prettierrc.toml files")]
+    Prettier {
+        #[arg(short, long, default_value = "false")]
+        recurse: bool,
+        #[command(flatten)]
+        dir: HasDir,
+    },
+    #[command(about = "Update Remix .eslintrc.json files")]
+    RemixEslint {
+        #[arg(short, long, default_value = "false")]
+        recurse: bool,
+        #[command(flatten)]
+        dir: HasDir,
+    },
+    #[command(about = "Update rustfmt.toml files")]
+    Rustfmt {
+        #[arg(short, long, default_value = "false")]
+        recurse: bool,
+        #[command(flatten)]
+        dir: HasDir,
+    },
+}
+
 #[derive(Debug, Args)]
 pub struct HasDir {
     #[arg(
@@ -68,7 +109,7 @@ impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
             Self::New(command) => match command {
-                Templates::AdventOfCode2022Rust { day, dir, git } => {
+                TemplatesNew::AdventOfCode2022Rust { day, dir, git } => {
                     let dir = if let Some(dir) = dir {
                         format!(
                             "{}/{}/{}",
@@ -90,17 +131,19 @@ impl Handle for Commands {
                         *git,
                     )
                 },
-                Templates::RustBin { name, dir, git } => crate::consts::template::RUST_BIN.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| i.replace(var_name!("crate-name"), name.as_str()),
-                    *git,
-                ),
-                Templates::RustLib { name, dir, git } => crate::consts::template::RUST_LIB.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| i.replace(var_name!("crate-name"), name.as_str()),
-                    *git,
-                ),
-                Templates::RemixPages {
+                TemplatesNew::RustBin { name, dir, git } => crate::consts::template::RUST_BIN
+                    .write(
+                        std::path::Path::new(&dir.dir).join(name),
+                        |i| i.replace(var_name!("crate-name"), name.as_str()),
+                        *git,
+                    ),
+                TemplatesNew::RustLib { name, dir, git } => crate::consts::template::RUST_LIB
+                    .write(
+                        std::path::Path::new(&dir.dir).join(name),
+                        |i| i.replace(var_name!("crate-name"), name.as_str()),
+                        *git,
+                    ),
+                TemplatesNew::RemixPages {
                     name,
                     dir,
                     api_domain,
@@ -122,6 +165,20 @@ impl Handle for Commands {
                     },
                     *git,
                 ),
+            },
+            Self::Update(command) => match command {
+                TemplatesUpdate::Clippy { recurse, dir } => {
+                    CLIPPY_CONFIG.update(Path::new(&dir.dir), *recurse)
+                },
+                TemplatesUpdate::Prettier { recurse, dir } => {
+                    PRETTIERRC.update(Path::new(&dir.dir), *recurse)
+                },
+                TemplatesUpdate::RemixEslint { recurse, dir } => {
+                    REMIX_ESLINTRC.update(Path::new(&dir.dir), *recurse)
+                },
+                TemplatesUpdate::Rustfmt { recurse, dir } => {
+                    RUSTFMT_CONFIG.update(Path::new(&dir.dir), *recurse)
+                },
             },
         }
     }

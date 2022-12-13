@@ -23,7 +23,7 @@ impl Handle for Actions {
                 production: _,
                 staging: _,
             } => {
-                let mut config = Config::load();
+                let mut config = Config::load()?;
 
                 let pnw_test = config.ssh.hosts.get_mut("pnw-test");
                 if pnw_test.is_none() {
