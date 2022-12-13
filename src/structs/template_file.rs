@@ -63,11 +63,8 @@ impl TemplateFile {
                 Value::Float(f) => f.to_string(),
                 _ => continue,
             };
-            println!("{}: {}", k, v);
             content = content.replace(k, &v);
-            println!("{}", content.contains(k));
         }
-        // println!("{}", content);
         content
     }
 }
