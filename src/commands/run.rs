@@ -23,10 +23,35 @@ impl Handle for Actions {
                 production: _,
                 staging: _,
             } => {
-                let config = Config::load();
-                let host = config.ssh.hosts.get("pnw-test").unwrap();
-                println!("s");
-                println!("{}", ssh_cmd!(host, "echo 1").unwrap());
+                let mut config = Config::load();
+
+                let pnw_test = config.ssh.hosts.get_mut("pnw-test");
+                if pnw_test.is_none() {
+                    return Err(anyhow::anyhow!("SSH host pnw-test not found in config"));
+                }
+                pnw_test.unwrap().prompt_for_root_if_none("pnw-test");
+
+                let pnw_api = config.ssh.hosts.get_mut("pnw-api");
+                if pnw_api.is_none() {
+                    return Err(anyhow::anyhow!("SSH host pnw-api not found in config"));
+                }
+                pnw_api.unwrap().prompt_for_root_if_none("pnw-api");
+
+                let pnw_test = config.ssh.hosts.get("pnw-test").unwrap();
+                let pnw_api = config.ssh.hosts.get("pnw-api").unwrap();
+
+                println!("Deploying and refreshing test server cache...");
+                ssh_cmd!(pnw_test, "cd ~/api && cap staging deploy || cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache", pnw_test.root_password.as_ref().unwrap())?;
+
+                println!("Refreshing production server cache...");
+                ssh_cmd!(
+                    pnw_api,
+                    "cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache",
+                    pnw_api.root_password.as_ref().unwrap()
+                )?;
+
+                println!("Done!");
+
                 Ok(())
             },
         }

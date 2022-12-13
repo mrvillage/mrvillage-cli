@@ -1,8 +1,10 @@
 use std::{
     collections::{HashMap, VecDeque},
+    io::Write,
     path::PathBuf,
 };
 
+use anyhow::Result;
 use serde::Deserialize;
 
 use crate::{consts::template_files::MRVILLAGE_CONFIG, traits::merge::Merge};
@@ -85,6 +87,26 @@ pub struct Ssh {
     pub hosts: HashMap<String, Host>,
 }
 
+impl Ssh {
+    pub fn get_host_with_root(&mut self, name: &str) -> Option<&Host> {
+        if let Some(host) = self.hosts.get_mut(name) {
+            if host.root_password.is_none() {
+                host.prompt_for_root_if_none(name);
+            }
+            Some(host)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_host_with_root_res(&mut self, name: &str) -> Result<&Host> {
+        match self.get_host_with_root(name) {
+            Some(host) => Ok(host),
+            None => Err(anyhow::anyhow!("SSH host {} not found", name)),
+        }
+    }
+}
+
 impl Merge<'_> for Ssh {
     fn merge(&mut self, other: &Self) {
         for (k, v) in &other.hosts {
@@ -121,6 +143,16 @@ impl Host {
 
     pub fn connection_string(&self) -> String {
         format!("{}@{}", self.user, self.ip)
+    }
+
+    pub fn prompt_for_root_if_none(&mut self, name: &str) {
+        if self.root_password.is_none() {
+            let mut root_password = String::new();
+            print!("Enter root password for {}: ", name);
+            std::io::stdout().flush().unwrap();
+            std::io::stdin().read_line(&mut root_password).unwrap();
+            self.root_password = Some(root_password);
+        }
     }
 }
 

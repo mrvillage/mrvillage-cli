@@ -1,3 +1,5 @@
+use std::process::Output;
+
 use anyhow::Result;
 
 use crate::structs::config::Host;
@@ -12,15 +14,14 @@ macro_rules! ssh_cmd {
     }
 }
 
-pub fn ssh_command(host: &Host, command: &str) -> Result<String> {
+pub fn ssh_command(host: &Host, command: &str) -> Result<Output> {
     let mut ssh = std::process::Command::new("ssh");
     if host.forward_agent {
         ssh.arg("-A");
     }
-    println!("{} {}", host.connection_string(), command);
     ssh.arg("-p")
         .arg(host.port.to_string())
         .arg(host.connection_string())
         .arg(command);
-    Ok(String::from_utf8(ssh.output()?.stdout)?)
+    Ok(ssh.output()?)
 }
