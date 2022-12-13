@@ -1,6 +1,6 @@
 mod config;
-mod projects;
 mod run;
+mod templates;
 
 use std::process::Command;
 
@@ -11,9 +11,9 @@ use crate::{structs::command::CommandWrapper, traits::handle::Handle};
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    #[command(about = "Work with projects")]
+    #[command(about = "Work with templates")]
     #[command(subcommand)]
-    Projects(projects::Commands),
+    Templates(templates::Commands),
     #[command(about = "Run an action")]
     #[command(subcommand)]
     Run(run::Actions),
@@ -30,7 +30,7 @@ pub enum Commands {
 impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
-            Self::Projects(c) => c.handle(),
+            Self::Templates(c) => c.handle(),
             Self::Run(c) => c.handle(),
             Self::Config(c) => c.handle(),
             Self::Parallel { commands } => {

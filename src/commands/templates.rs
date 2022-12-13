@@ -25,12 +25,16 @@ pub enum Templates {
         name: String,
         #[command(flatten)]
         dir: HasDir,
+        #[arg(short, long)]
+        git: Option<bool>,
     },
     #[command(about = "Create a new project with the Rust Library template")]
     RustLib {
         name: String,
         #[command(flatten)]
         dir: HasDir,
+        #[arg(short, long)]
+        git: Option<bool>,
     },
     #[command(about = "Create a new project with the Remix with Cloudflare Pages template")]
     RemixPages {
@@ -45,6 +49,8 @@ pub enum Templates {
         color: String,
         #[command(flatten)]
         dir: HasDir,
+        #[arg(short, long)]
+        git: Option<bool>,
     },
 }
 
@@ -56,8 +62,6 @@ pub struct HasDir {
         default_value_t = std::env::current_dir().unwrap().display().to_string()
     )]
     dir: String,
-    #[arg(short, long)]
-    git: Option<bool>,
 }
 
 impl Handle for Commands {
@@ -86,15 +90,15 @@ impl Handle for Commands {
                         *git,
                     )
                 },
-                Templates::RustBin { name, dir } => crate::consts::template::RUST_BIN.write(
+                Templates::RustBin { name, dir, git } => crate::consts::template::RUST_BIN.write(
                     std::path::Path::new(&dir.dir).join(name),
                     |i| i.replace(var_name!("crate-name"), name.as_str()),
-                    dir.git,
+                    *git,
                 ),
-                Templates::RustLib { name, dir } => crate::consts::template::RUST_LIB.write(
+                Templates::RustLib { name, dir, git } => crate::consts::template::RUST_LIB.write(
                     std::path::Path::new(&dir.dir).join(name),
                     |i| i.replace(var_name!("crate-name"), name.as_str()),
-                    dir.git,
+                    *git,
                 ),
                 Templates::RemixPages {
                     name,
@@ -103,6 +107,7 @@ impl Handle for Commands {
                     meta_name,
                     meta_description,
                     color,
+                    git,
                 } => crate::consts::template::REMIX_PAGES.write(
                     std::path::Path::new(&dir.dir).join(name),
                     |i| {
@@ -115,7 +120,7 @@ impl Handle for Commands {
                             )
                             .replace(var_name!("primary-color"), color.as_str())
                     },
-                    dir.git,
+                    *git,
                 ),
             },
         }

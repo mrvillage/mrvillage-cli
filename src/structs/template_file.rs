@@ -11,9 +11,9 @@ impl TemplateFile {
         Self { name, content }
     }
 
-    pub fn write(&self, dir: &Path, content: String) -> anyhow::Result<()> {
+    pub fn write(&self, dir: &Path, interpolator: impl Fn(&str) -> String) -> anyhow::Result<()> {
         let path = dir.join(&self.name);
-        std::fs::write(path, content)?;
+        std::fs::write(path, interpolator(self.content))?;
         Ok(())
     }
 }
