@@ -23,13 +23,13 @@ impl TemplateFile {
     }
 
     pub fn write(&self, dir: &Path, interpolator: impl Fn(&str) -> String) -> anyhow::Result<()> {
-        let path = dir.join(&self.name);
+        let path = dir.join(self.name);
         std::fs::write(path, interpolator(self.content))?;
         Ok(())
     }
 
     pub fn update(&self, dir: &Path, recurse: bool) -> anyhow::Result<()> {
-        let path = dir.join(&self.name);
+        let path = dir.join(self.name);
         if path.exists() {
             if let Ok(contents) = String::from_utf8(std::fs::read(&path)?) {
                 if contents.contains(template_file_marker!(&self.marker)) {

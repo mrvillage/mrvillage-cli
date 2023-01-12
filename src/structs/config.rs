@@ -76,7 +76,7 @@ impl Config {
     }
 
     fn read_from_file(path: &std::path::PathBuf) -> Self {
-        let config = std::fs::read_to_string(&path).unwrap();
+        let config = std::fs::read_to_string(path).unwrap();
         toml::from_str(&config).unwrap()
     }
 }

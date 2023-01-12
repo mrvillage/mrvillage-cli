@@ -14,15 +14,34 @@ pub enum Actions {
         #[arg(default_value = "false")]
         staging: bool,
     },
+    #[command(about = "Deploy PnW")]
+    #[command(name = "deploy-pnw")]
+    DeployPnW {
+        #[arg(short, long)]
+        #[arg(default_value = "false")]
+        production: bool,
+        #[arg(short, long)]
+        #[arg(default_value = "false")]
+        staging: bool,
+    },
 }
 
 impl Handle for Actions {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
             Self::DeployPnWApi {
-                production: _,
-                staging: _,
+                production,
+                staging,
             } => {
+                let production = *production;
+                let staging = *staging;
+
+                if !staging && !production {
+                    return Err(anyhow::anyhow!(
+                        "You must deploy to at least one environment"
+                    ));
+                }
+
                 let mut config = Config::load()?;
 
                 let pnw_test = config.ssh.hosts.get_mut("pnw-test");
@@ -40,15 +59,75 @@ impl Handle for Actions {
                 let pnw_test = config.ssh.hosts.get("pnw-test").unwrap();
                 let pnw_api = config.ssh.hosts.get("pnw-api").unwrap();
 
-                println!("Deploying and refreshing test server cache...");
-                ssh_cmd!(pnw_test, "cd ~/api && cap staging deploy || cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache", pnw_test.root_password.as_ref().unwrap())?;
+                let deploy = if production && staging {
+                    "cap production deploy || cap staging deploy"
+                } else if production {
+                    "cap production deploy"
+                } else {
+                    "cap staging deploy"
+                };
 
-                println!("Refreshing production server cache...");
+                if staging {
+                    println!("Deploying and refreshing test server cache...");
+                } else {
+                    println!("Deploying...");
+                }
                 ssh_cmd!(
+                    pnw_test,
+                    "cd ~/api && {deploy}{}",
+                    if staging {
+                        format!(" || cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache",  pnw_test.root_password.as_ref().unwrap())
+                    } else {
+                        "".into()
+                    }
+                )?;
+
+                if production {
+                    println!("Refreshing production server cache...");
+                    ssh_cmd!(
                     pnw_api,
                     "cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache",
                     pnw_api.root_password.as_ref().unwrap()
                 )?;
+                }
+
+                println!("Done!");
+
+                Ok(())
+            },
+            Self::DeployPnW {
+                production,
+                staging,
+            } => {
+                let production = *production;
+                let staging = *staging;
+
+                if !staging && !production {
+                    return Err(anyhow::anyhow!(
+                        "You must deploy to at least one environment"
+                    ));
+                }
+
+                let mut config = Config::load()?;
+
+                let pnw_test = config.ssh.hosts.get_mut("pnw-test");
+                if pnw_test.is_none() {
+                    return Err(anyhow::anyhow!("SSH host pnw-test not found in config"));
+                }
+                pnw_test.unwrap().prompt_for_root_if_none("pnw-test");
+
+                let pnw_test = config.ssh.hosts.get("pnw-test").unwrap();
+
+                let deploy = if production && staging {
+                    "cap production deploy || cap staging deploy"
+                } else if production {
+                    "cap production deploy"
+                } else {
+                    "cap staging deploy"
+                };
+
+                println!("Deploying...");
+                ssh_cmd!(pnw_test, "cd ~/main-site && {deploy}")?;
 
                 println!("Done!");
 
