@@ -1,6 +1,7 @@
 use clap::Subcommand;
+use xshell::Shell;
 
-use crate::{ssh_cmd, structs::config::Config, traits::handle::Handle};
+use crate::{quiet_cmd, ssh_cmd, structs::config::Config, traits::handle::Handle};
 
 #[derive(Debug, Subcommand)]
 pub enum Actions {
@@ -23,6 +24,13 @@ pub enum Actions {
         #[arg(short, long)]
         #[arg(default_value = "false")]
         staging: bool,
+    },
+    #[command(about = "Delete empty files")]
+    #[command(name = "delete-empty-files")]
+    DeleteEmptyFiles {
+        #[arg(short, long)]
+        #[arg(default_value = ".")]
+        dir: String,
     },
 }
 
@@ -131,6 +139,12 @@ impl Handle for Actions {
 
                 println!("Done!");
 
+                Ok(())
+            },
+            Self::DeleteEmptyFiles { dir } => {
+                let sh = Shell::new()?;
+                quiet_cmd!(sh, "find {dir} -type f -empty -print -delete").run()?;
+                println!("Deleted empty files in {dir}!");
                 Ok(())
             },
         }
