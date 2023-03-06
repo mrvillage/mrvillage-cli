@@ -22,7 +22,7 @@ pub fn interpolate_default_vars(content: &str) -> String {
 #[macro_export]
 macro_rules! include_template_file {
     ($v:expr) => {
-        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/", $v))
+        include_str!(concat!(env!("OUT_DIR"), "/templates/", $v))
     };
 }
 
