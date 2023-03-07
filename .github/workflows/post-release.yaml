@@ -19,6 +19,8 @@ jobs:
     - name: Create release
       id: release
       uses: mrvillage/cargo-release-action/release@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
   build-release:
     name: build-release
     needs: create-release
@@ -51,3 +53,4 @@ jobs:
         target: ${{ matrix.target }}
         os: ${{ matrix.os }}
         rust: ${{ matrix.rust }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
