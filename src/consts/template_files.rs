@@ -24,8 +24,11 @@ pub const RUSTFMT_CONFIG: TemplateFile = TemplateFile::new(
     include_template_file!("rustfmt.toml"),
 );
 
-pub const CARGO_CONFIG: TemplateFile =
-    TemplateFile::new("Cargo.toml", "", include_template_file!("Cargo.toml"));
+pub const CARGO_CONFIG: TemplateFile = TemplateFile::new(
+    "Cargo.toml",
+    "",
+    include_template_file!("template.Cargo.toml"),
+);
 
 pub const RUST_GITIGNORE: TemplateFile =
     TemplateFile::new(".gitignore", "", include_template_file!("rust.gitignore"));
