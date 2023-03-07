@@ -4,6 +4,8 @@
 
 ## [Unreleased] - ReleaseDate
 
+## [0.1.8] - 2023-03-07
+
 ## [0.1.7] - 2023-03-07
 
 ## [0.1.6] - 2023-03-07
@@ -22,7 +24,9 @@
 
 <!-- next-url -->
 
-[unreleased]: https://github.com/mrvillage/mrvillage-cli/compare/v0.1.7...HEAD
+[unreleased]: https://github.com/mrvillage/mrvillage-cli/compare/v0.1.8...HEAD
+
+[0.1.8]: https://github.com/mrvillage/mrvillage-cli/compare/v0.1.7...v0.1.8
 
 [0.1.7]: https://github.com/mrvillage/mrvillage-cli/compare/v0.1.6...v0.1.7
 
