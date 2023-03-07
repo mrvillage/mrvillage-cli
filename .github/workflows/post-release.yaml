@@ -8,6 +8,9 @@ on:
     tags:
     - "v*"
 
+env:
+  BIN_NAME: "mrvillage"
+
 jobs:
   create-release:
     name: create-release
