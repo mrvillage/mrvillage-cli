@@ -24,7 +24,6 @@ jobs:
   build-release:
     name: build-release
     needs: create-release
-    if: false
     strategy:
       fail-fast: false
       matrix:
