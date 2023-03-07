@@ -18,7 +18,7 @@ jobs:
     steps:
     - name: Create release
       id: release
-      uses: mrvillage/cargo-release-action/release
+      uses: mrvillage/cargo-release-action/release@master
   build-release:
     name: build-release
     needs: create-release
@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Build release
-      uses: mrvillage/cargo-release-action/build
+      uses: mrvillage/cargo-release-action/build@master
       with:
         bin_name: "mrvillage"
         release_version: ${{ needs.create-release.outputs.release_version }}
