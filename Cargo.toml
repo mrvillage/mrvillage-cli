@@ -1,6 +1,6 @@
 [package]
 name = "mrvillage-cli"
-version = "0.1.10"
+version = "0.1.11"
 edition = "2021"
 include = ["/templates", "/src"]
 description = "My personal CLI"
