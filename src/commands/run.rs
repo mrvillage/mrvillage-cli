@@ -68,11 +68,11 @@ impl Handle for Actions {
                 let pnw_api = config.ssh.hosts.get("pnw-api").unwrap();
 
                 let deploy = if production && staging {
-                    "cap production deploy || cap staging deploy"
+                    "cap production deploy; cap staging deploy;"
                 } else if production {
-                    "cap production deploy"
+                    "cap production deploy;"
                 } else {
-                    "cap staging deploy"
+                    "cap staging deploy;"
                 };
 
                 if staging {
@@ -82,9 +82,9 @@ impl Handle for Actions {
                 }
                 ssh_cmd!(
                     pnw_test,
-                    "cd ~/api && {deploy}{}",
+                    "cd ~/api; {deploy}{}",
                     if staging {
-                        format!(" || cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache",  pnw_test.root_password.as_ref().unwrap())
+                        format!(" cd /var/vhosts/api/current && echo {} | sudo -S php artisan lighthouse:cache",  pnw_test.root_password.as_ref().unwrap())
                     } else {
                         "".into()
                     }
@@ -127,15 +127,15 @@ impl Handle for Actions {
                 let pnw_test = config.ssh.hosts.get("pnw-test").unwrap();
 
                 let deploy = if production && staging {
-                    "cap production deploy || cap staging deploy"
+                    "cap production deploy; cap staging deploy;"
                 } else if production {
-                    "cap production deploy"
+                    "cap production deploy;"
                 } else {
-                    "cap staging deploy"
+                    "cap staging deploy;"
                 };
 
                 println!("Deploying...");
-                ssh_cmd!(pnw_test, "cd ~/main-site && {deploy}")?;
+                ssh_cmd!(pnw_test, "cd ~/main-site; {deploy}")?;
 
                 println!("Done!");
 
