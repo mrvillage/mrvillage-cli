@@ -46,7 +46,7 @@ enum_discrim_align_threshold = 15
 match_arm_blocks = true
 match_arm_leading_pipes = "Never"
 force_multiline_blocks = true
-fn_args_layout = "Tall"
+fn_params_layout = "Tall"
 brace_style = "SameLineWhere"
 control_brace_style = "AlwaysSameLine"
 trailing_semicolon = true
@@ -74,3 +74,4 @@ error_on_unformatted = false
 ignore = []
 emit_mode = "Files"
 make_backup = false
+
