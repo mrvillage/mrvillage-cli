@@ -62,7 +62,7 @@ impl Template {
             }
         }
         for i in self.config_files.iter() {
-            i.file.write(dir_path, interpolator)?;
+            i.file.write(&dir_path.join(i.dir), interpolator)?;
         }
         if git {
             let sh = Shell::new()?;

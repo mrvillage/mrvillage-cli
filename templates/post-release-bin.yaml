@@ -1,0 +1,52 @@
+name: post-release
+
+on:
+  push:
+    tags:
+    - "v*"
+
+jobs:
+  create-release:
+    name: create-release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.release.outputs.upload_url }}
+      release_version: ${{ steps.release.outputs.release_version }}
+    steps:
+    - name: Create release
+      id: release
+      uses: mrvillage/cargo-release-action/release@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+  build-release:
+    name: build-release
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [linux, macos, win-msvc]
+        include:
+        - build: linux
+          os: ubuntu-20.04
+          rust: stable
+          target: x86_64-unknown-linux-gnu
+        - build: macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+        - build: win-msvc
+          os: windows-2019
+          rust: stable
+          target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Build release
+      uses: mrvillage/cargo-release-action/build@master
+      with:
+        bin_name: "$$-cli-bin-name-$$"
+        release_version: ${{ needs.create-release.outputs.release_version }}
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        target: ${{ matrix.target }}
+        os: ${{ matrix.os }}
+        rust: ${{ matrix.rust }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}

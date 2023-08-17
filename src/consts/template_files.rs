@@ -38,3 +38,30 @@ pub const MRVILLAGE_CONFIG: TemplateFile = TemplateFile::new(
     "",
     include_template_file!("default-mrvillage.toml"),
 );
+
+pub const RELEASE_ACTION_BINARY: TemplateFile = TemplateFile::new(
+    "post-release.yaml",
+    "post-release-bin",
+    include_template_file!("post-release-bin.yaml"),
+);
+
+pub const RELEASE_ACTION_LIBRARY: TemplateFile = TemplateFile::new(
+    "post-release.yaml",
+    "post-release-lib",
+    include_template_file!("post-release-lib.yaml"),
+);
+
+pub const RELEASE_TOML: TemplateFile = TemplateFile::new(
+    "release.toml",
+    "release",
+    include_template_file!("release.toml"),
+);
+
+pub const CHANGELOG_MD: TemplateFile = TemplateFile::new(
+    "CHANGELOG.md",
+    "changelog",
+    include_template_file!("CHANGELOG.md"),
+);
+
+pub const LICENSE: TemplateFile =
+    TemplateFile::new("LICENSE", "", include_template_file!("LICENSE"));

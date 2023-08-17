@@ -23,6 +23,7 @@ impl TemplateFile {
     }
 
     pub fn write(&self, dir: &Path, interpolator: impl Fn(&str) -> String) -> anyhow::Result<()> {
+        std::fs::create_dir_all(dir)?;
         let path = dir.join(self.name);
         std::fs::write(path, interpolator(self.content))?;
         Ok(())

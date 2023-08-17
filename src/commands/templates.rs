@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+    path::Path,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use clap::{Args, Subcommand};
 
@@ -36,6 +39,12 @@ pub enum TemplatesNew {
         dir: HasDir,
         #[arg(short, long)]
         git: Option<bool>,
+        #[arg(short, long)]
+        bin: Option<String>,
+        #[arg(short, long)]
+        repo: Option<String>,
+        #[arg(short, long)]
+        org: Option<String>,
     },
     #[command(about = "Create a new project with the Rust Library template")]
     RustLib {
@@ -44,6 +53,10 @@ pub enum TemplatesNew {
         dir: HasDir,
         #[arg(short, long)]
         git: Option<bool>,
+        #[arg(short, long)]
+        repo: Option<String>,
+        #[arg(short, long)]
+        org: Option<String>,
     },
     #[command(about = "Create a new project with the Remix with Cloudflare Pages template")]
     RemixPages {
@@ -105,6 +118,37 @@ pub struct HasDir {
     dir: String,
 }
 
+fn replace_rust_params(
+    text: &str,
+    name: &str,
+    bin: &Option<String>,
+    repo: &Option<String>,
+    org: &Option<String>,
+) -> String {
+    text.replace(var_name!("crate-name"), name)
+        .replace(
+            var_name!("bin-name"),
+            bin.as_ref().map(|i| i.as_str()).unwrap_or(name),
+        )
+        .replace(
+            var_name!("repo-name"),
+            repo.as_ref().map(|i| i.as_str()).unwrap_or(name),
+        )
+        .replace(
+            var_name!("org-name"),
+            org.as_ref().map(|i| i.as_str()).unwrap_or("mrvillage"),
+        )
+        .replace(
+            var_name!("current-year"),
+            &(1970
+                + (SystemTime::now().duration_since(UNIX_EPOCH))
+                    .expect("system time error")
+                    .as_secs()
+                    / (365 * 24 * 60 * 60))
+                .to_string(),
+        )
+}
+
 impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
@@ -131,18 +175,29 @@ impl Handle for Commands {
                         *git,
                     )
                 },
-                TemplatesNew::RustBin { name, dir, git } => crate::consts::template::RUST_BIN
-                    .write(
-                        std::path::Path::new(&dir.dir).join(name),
-                        |i| i.replace(var_name!("crate-name"), name.as_str()),
-                        *git,
-                    ),
-                TemplatesNew::RustLib { name, dir, git } => crate::consts::template::RUST_LIB
-                    .write(
-                        std::path::Path::new(&dir.dir).join(name),
-                        |i| i.replace(var_name!("crate-name"), name.as_str()),
-                        *git,
-                    ),
+                TemplatesNew::RustBin {
+                    name,
+                    dir,
+                    git,
+                    bin,
+                    repo,
+                    org,
+                } => crate::consts::template::RUST_BIN.write(
+                    std::path::Path::new(&dir.dir).join(name),
+                    |i| replace_rust_params(i, name, &bin, &repo, &org),
+                    *git,
+                ),
+                TemplatesNew::RustLib {
+                    name,
+                    dir,
+                    git,
+                    repo,
+                    org,
+                } => crate::consts::template::RUST_LIB.write(
+                    std::path::Path::new(&dir.dir).join(name),
+                    |i| replace_rust_params(i, name, &None, &repo, &org),
+                    *git,
+                ),
                 TemplatesNew::RemixPages {
                     name,
                     dir,

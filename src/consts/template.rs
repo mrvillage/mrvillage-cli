@@ -3,7 +3,8 @@ use include_dir::include_dir;
 use crate::structs::{template::Template, template_file::TemplateFileWrapper};
 
 use super::template_files::{
-    CARGO_CONFIG, CLIPPY_CONFIG, MRVILLAGE_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG,
+    CARGO_CONFIG, CHANGELOG_MD, CLIPPY_CONFIG, LICENSE, MRVILLAGE_CONFIG, PRETTIERRC,
+    RELEASE_ACTION_BINARY, RELEASE_ACTION_LIBRARY, RELEASE_TOML, REMIX_ESLINTRC, RUSTFMT_CONFIG,
     RUST_GITIGNORE,
 };
 
@@ -29,6 +30,10 @@ pub const RUST_BIN: Template = Template {
         TemplateFileWrapper::new("", &CARGO_CONFIG),
         TemplateFileWrapper::new("", &RUST_GITIGNORE),
         TemplateFileWrapper::new("", &MRVILLAGE_CONFIG),
+        TemplateFileWrapper::new(".github/workflows", &RELEASE_ACTION_BINARY),
+        TemplateFileWrapper::new("", &RELEASE_TOML),
+        TemplateFileWrapper::new("", &CHANGELOG_MD),
+        TemplateFileWrapper::new("", &LICENSE),
     ],
     git: true,
 };
@@ -42,6 +47,10 @@ pub const RUST_LIB: Template = Template {
         TemplateFileWrapper::new("", &CARGO_CONFIG),
         TemplateFileWrapper::new("", &RUST_GITIGNORE),
         TemplateFileWrapper::new("", &MRVILLAGE_CONFIG),
+        TemplateFileWrapper::new(".github/workflows", &RELEASE_ACTION_LIBRARY),
+        TemplateFileWrapper::new("", &RELEASE_TOML),
+        TemplateFileWrapper::new("", &CHANGELOG_MD),
+        TemplateFileWrapper::new("", &LICENSE),
     ],
     git: true,
 };
