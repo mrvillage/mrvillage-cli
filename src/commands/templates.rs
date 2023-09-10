@@ -10,7 +10,6 @@ use crate::{
         template::DEFAULT_LEPTOS,
         template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
     },
-    structs::command,
     traits::handle::Handle,
     var_name,
 };
