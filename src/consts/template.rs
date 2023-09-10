@@ -65,3 +65,13 @@ pub const REMIX_PAGES: Template = Template {
     ],
     git: true,
 };
+
+pub const DEFAULT_LEPTOS: Template = Template {
+    name: "default-leptos",
+    dir: include_dir!("$CARGO_MANIFEST_DIR/templates/default_leptos"),
+    config_files: &[
+        TemplateFileWrapper::new("", &CLIPPY_CONFIG),
+        TemplateFileWrapper::new("", &RUSTFMT_CONFIG),
+    ],
+    git: true,
+};

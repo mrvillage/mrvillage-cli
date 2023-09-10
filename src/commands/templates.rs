@@ -6,7 +6,11 @@ use std::{
 use clap::{Args, Subcommand};
 
 use crate::{
-    consts::template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
+    consts::{
+        template::DEFAULT_LEPTOS,
+        template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
+    },
+    structs::command,
     traits::handle::Handle,
     var_name,
 };
@@ -73,6 +77,18 @@ pub enum TemplatesNew {
         dir: HasDir,
         #[arg(short, long)]
         git: Option<bool>,
+    },
+    #[command(about = "Create a new project with the default Leptos template")]
+    Leptos {
+        name: String,
+        #[command(flatten)]
+        dir: HasDir,
+        #[arg(short, long)]
+        git: Option<bool>,
+        #[arg(short, long)]
+        repo: Option<String>,
+        #[arg(short, long)]
+        org: Option<String>,
     },
 }
 
@@ -218,6 +234,17 @@ impl Handle for Commands {
                             )
                             .replace(var_name!("primary-color"), color.as_str())
                     },
+                    *git,
+                ),
+                TemplatesNew::Leptos {
+                    name,
+                    dir,
+                    git,
+                    repo,
+                    org,
+                } => DEFAULT_LEPTOS.write(
+                    std::path::Path::new(&dir.dir).join(name),
+                    |i| replace_rust_params(i, name, &None, repo, org),
                     *git,
                 ),
             },
