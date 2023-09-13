@@ -11,7 +11,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="mrvillage-ui" href="/mrvillage-ui.css" />
         <Title text="Timer" />
         <div class="dark">
-            <main class="text-center pt-4 min-h-[100vh] w-full !max-w-full mu-main-bg mu-prose">
+            <main class="min-h-[100vh] w-full !max-w-full mu-main-bg mu-prose">
             </main>
         </div>
     }
