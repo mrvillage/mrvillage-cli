@@ -174,3 +174,8 @@ lib-features = ["hydrate"]
 
 [patch.crates-io]
 leptos = { git = "https://github.com/leptos-rs/leptos.git", branch = "main" }
+
+[dependencies.leptos-tabler-icons]
+git = "https://github.com/mrvillage/leptos-tabler-icons.git"
+branch = "master"
+features = ["Icon123"]
