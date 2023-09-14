@@ -24,6 +24,13 @@ impl log::Log for SimpleLogger {
 
 static LOGGER: SimpleLogger = SimpleLogger;
 
+#[get("/icons/{name}.svg")]
+async fn icons(path: web::Path<(String,)>) -> actix_web::Result<actix_files::NamedFile> {
+    let name = path.into_inner().0;
+    let path = format!("icons/{}.svg", name);
+    Ok(actix_files::NamedFile::open(path)?)
+}
+
 pub async fn run() -> std::io::Result<()> {
     let _ = log::set_logger(&LOGGER).map(|()| log::set_max_level(log::LevelFilter::Trace));
     _ = dotenvy::dotenv();
@@ -33,7 +40,6 @@ pub async fn run() -> std::io::Result<()> {
     log::info!("Starting server at {}", addr);
 
     let routes = generate_route_list(|| view! { <App/>});
-    println!("{:?}", routes);
 
     HttpServer::new(move || {
         let leptos_options = &conf.leptos_options;
@@ -46,6 +52,7 @@ pub async fn run() -> std::io::Result<()> {
                 routes.to_owned(),
                 || view! { <App/>},
             )
+            .service(icons)
             .service(Files::new("/", site_root.to_owned()))
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
