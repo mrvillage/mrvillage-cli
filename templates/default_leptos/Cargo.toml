@@ -160,5 +160,6 @@ bin-features = ["ssr"]
 lib-features = ["hydrate"]
 
 [dependencies.leptos-tabler-icons]
-version = "0.2"
+git = "https://github.com/mrvillage/leptos-tabler-icons.git"
+branch = "master"
 features = ["Icon123"]
