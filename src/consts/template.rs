@@ -5,7 +5,7 @@ use crate::structs::{template::Template, template_file::TemplateFileWrapper};
 use super::template_files::{
     CARGO_CONFIG, CHANGELOG_MD, CLIPPY_CONFIG, LICENSE, MRVILLAGE_CONFIG, PRETTIERRC,
     RELEASE_ACTION_BINARY, RELEASE_ACTION_LIBRARY, RELEASE_TOML, REMIX_ESLINTRC, RUSTFMT_CONFIG,
-    RUST_GITIGNORE,
+    RUST_ACTION, RUST_GITIGNORE,
 };
 
 pub const ADVENT_OF_CODE_2022_RUST: Template = Template {
@@ -34,6 +34,7 @@ pub const RUST_BIN: Template = Template {
         TemplateFileWrapper::new("", &RELEASE_TOML),
         TemplateFileWrapper::new("", &CHANGELOG_MD),
         TemplateFileWrapper::new("", &LICENSE),
+        TemplateFileWrapper::new(".github/workflows", &RUST_ACTION),
     ],
     git: true,
 };
@@ -51,6 +52,7 @@ pub const RUST_LIB: Template = Template {
         TemplateFileWrapper::new("", &RELEASE_TOML),
         TemplateFileWrapper::new("", &CHANGELOG_MD),
         TemplateFileWrapper::new("", &LICENSE),
+        TemplateFileWrapper::new(".github/workflows", &RUST_ACTION),
     ],
     git: true,
 };
@@ -72,6 +74,7 @@ pub const DEFAULT_LEPTOS: Template = Template {
     config_files: &[
         TemplateFileWrapper::new("", &CLIPPY_CONFIG),
         TemplateFileWrapper::new("", &RUSTFMT_CONFIG),
+        TemplateFileWrapper::new(".github/workflows", &RUST_ACTION),
     ],
     git: true,
 };

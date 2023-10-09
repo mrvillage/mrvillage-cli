@@ -65,3 +65,9 @@ pub const CHANGELOG_MD: TemplateFile = TemplateFile::new(
 
 pub const LICENSE: TemplateFile =
     TemplateFile::new("LICENSE", "", include_template_file!("LICENSE"));
+
+pub const RUST_ACTION: TemplateFile = TemplateFile::new(
+    "rust.yaml",
+    "rust-action",
+    include_template_file!("rust-action.yaml"),
+);
