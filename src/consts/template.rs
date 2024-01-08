@@ -78,3 +78,14 @@ pub const DEFAULT_LEPTOS: Template = Template {
     ],
     git: true,
 };
+
+pub const TS_LIB: Template = Template {
+    name: "ts-lib",
+    dir: include_dir!("$CARGO_MANIFEST_DIR/templates/ts_lib"),
+    config_files: &[
+        TemplateFileWrapper::new("", &MRVILLAGE_CONFIG),
+        TemplateFileWrapper::new("", &PRETTIERRC),
+        TemplateFileWrapper::new("", &LICENSE),
+    ],
+    git: true,
+};

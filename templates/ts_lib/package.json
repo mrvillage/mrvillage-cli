@@ -1,0 +1,31 @@
+{
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c && tsc"
+  },
+  "types": "./lib/index.d.ts",
+  "main": "./cjs/index.js",
+  "module": "./esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./esm/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./cjs/index.js"
+      }
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/node": "^20.10.6",
+    "glob": "^10.3.10",
+    "rollup": "^4.9.2",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "typescript": "^5.3.3"
+  }
+}

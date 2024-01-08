@@ -1,0 +1,7 @@
+node_modules/
+*.md
+src/
+tsconfig.json
+rollup.config.js
+.prettierrc.toml
+.env*

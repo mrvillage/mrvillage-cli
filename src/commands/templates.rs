@@ -7,7 +7,7 @@ use clap::{Args, Subcommand};
 
 use crate::{
     consts::{
-        template::DEFAULT_LEPTOS,
+        template::{DEFAULT_LEPTOS, TS_LIB},
         template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
     },
     traits::handle::Handle,
@@ -89,6 +89,19 @@ pub enum TemplatesNew {
         #[arg(short, long)]
         org: Option<String>,
     },
+    #[command(about = "Create a new project with the default TypeScript library templates")]
+    #[command(name = "ts-lib")]
+    TsLib {
+        name: String,
+        #[command(flatten)]
+        dir: HasDir,
+        #[arg(short, long)]
+        git: Option<bool>,
+        #[arg(short, long)]
+        repo: Option<String>,
+        #[arg(short, long)]
+        org: Option<String>,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -140,28 +153,37 @@ fn replace_rust_params(
     repo: &Option<String>,
     org: &Option<String>,
 ) -> String {
-    text.replace(var_name!("crate-name"), name)
+    replace_default_params(text, name, repo, org)
+        .replace(var_name!("crate-name"), name)
         .replace(
             var_name!("bin-name"),
             bin.as_ref().map(|i| i.as_str()).unwrap_or(name),
         )
-        .replace(
-            var_name!("repo-name"),
-            repo.as_ref().map(|i| i.as_str()).unwrap_or(name),
-        )
-        .replace(
-            var_name!("org-name"),
-            org.as_ref().map(|i| i.as_str()).unwrap_or("mrvillage"),
-        )
-        .replace(
-            var_name!("current-year"),
-            &(1970
-                + (SystemTime::now().duration_since(UNIX_EPOCH))
-                    .expect("system time error")
-                    .as_secs()
-                    / (365 * 24 * 60 * 60))
-                .to_string(),
-        )
+}
+
+fn replace_default_params(
+    text: &str,
+    name: &str,
+    repo: &Option<String>,
+    org: &Option<String>,
+) -> String {
+    text.replace(
+        var_name!("repo-name"),
+        repo.as_ref().map(|i| i.as_str()).unwrap_or(name),
+    )
+    .replace(
+        var_name!("org-name"),
+        org.as_ref().map(|i| i.as_str()).unwrap_or("mrvillage"),
+    )
+    .replace(
+        var_name!("current-year"),
+        &(1970
+            + (SystemTime::now().duration_since(UNIX_EPOCH))
+                .expect("system time error")
+                .as_secs()
+                / (365 * 24 * 60 * 60))
+            .to_string(),
+    )
 }
 
 impl Handle for Commands {
@@ -244,6 +266,17 @@ impl Handle for Commands {
                 } => DEFAULT_LEPTOS.write(
                     std::path::Path::new(&dir.dir).join(name),
                     |i| replace_rust_params(i, name, &None, repo, org),
+                    *git,
+                ),
+                TemplatesNew::TsLib {
+                    name,
+                    dir,
+                    git,
+                    repo,
+                    org,
+                } => TS_LIB.write(
+                    std::path::Path::new(&dir.dir).join(name),
+                    |i| replace_default_params(i, name, repo, org),
                     *git,
                 ),
             },

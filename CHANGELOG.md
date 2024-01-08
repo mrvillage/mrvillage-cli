@@ -3,6 +3,7 @@
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+- Add `ts_lib` template
 
 ## [0.1.15] - 2023-08-17
 
