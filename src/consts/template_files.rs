@@ -1,7 +1,7 @@
 use crate::{include_template_file, structs::template_file::TemplateFile};
 
 pub const PRETTIERRC: TemplateFile = TemplateFile::new(
-    ".prettierrc",
+    ".prettierrc.toml",
     "prettierrc",
     include_template_file!(".prettierrc.toml"),
 );
