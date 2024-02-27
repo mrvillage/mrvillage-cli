@@ -25,6 +25,16 @@ pub enum Actions {
         #[arg(default_value = "false")]
         staging: bool,
     },
+    #[command(about = "Deploy PnW API Subscriptions")]
+    #[command(name = "deploy-pnw-subs")]
+    DeployPnWSubs {
+        #[arg(short, long)]
+        #[arg(default_value = "false")]
+        production: bool,
+        #[arg(short, long)]
+        #[arg(default_value = "false")]
+        staging: bool,
+    },
     #[command(about = "Delete empty files")]
     #[command(name = "delete-empty-files")]
     DeleteEmptyFiles {
@@ -136,6 +146,44 @@ impl Handle for Actions {
 
                 println!("Deploying...");
                 ssh_cmd!(pnw_test, "cd ~/main-site; {deploy}")?;
+
+                println!("Done!");
+
+                Ok(())
+            },
+            Self::DeployPnWSubs {
+                production,
+                staging,
+            } => {
+                let production = *production;
+                let staging = *staging;
+
+                if !staging && !production {
+                    return Err(anyhow::anyhow!(
+                        "You must deploy to at least one environment"
+                    ));
+                }
+
+                let mut config = Config::load()?;
+
+                let pnw_test = config.ssh.hosts.get_mut("pnw-test");
+                if pnw_test.is_none() {
+                    return Err(anyhow::anyhow!("SSH host pnw-test not found in config"));
+                }
+                pnw_test.unwrap().prompt_for_root_if_none("pnw-test");
+
+                let pnw_test = config.ssh.hosts.get("pnw-test").unwrap();
+
+                let deploy = if production && staging {
+                    "cap production deploy; cap staging deploy;"
+                } else if production {
+                    "cap production deploy;"
+                } else {
+                    "cap staging deploy;"
+                };
+
+                println!("Deploying...");
+                ssh_cmd!(pnw_test, "cd ~/api-subscriptions-rs; {deploy}")?;
 
                 println!("Done!");
 
