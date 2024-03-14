@@ -183,7 +183,7 @@ impl Handle for Actions {
                 };
 
                 println!("Deploying...");
-                ssh_cmd!(pnw_test, "cd ~/api-subscriptions-rs; {deploy}")?;
+                ssh_cmd!(pnw_test, "cd ~/api-subscriptions; {deploy}")?;
 
                 println!("Done!");
 
