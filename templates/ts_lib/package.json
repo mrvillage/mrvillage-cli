@@ -6,17 +6,17 @@
     "build": "rollup -c && tsc"
   },
   "types": "./lib/index.d.ts",
-  "main": "./cjs/index.js",
-  "module": "./esm/index.js",
+  "main": "./cjs/index.cjs",
+  "module": "./esm/index.mjs",
   "exports": {
     ".": {
       "import": {
         "types": "./lib/index.d.ts",
-        "default": "./esm/index.js"
+        "default": "./esm/index.mjs"
       },
       "require": {
         "types": "./lib/index.d.ts",
-        "default": "./cjs/index.js"
+        "default": "./cjs/index.cjs"
       }
     }
   },
