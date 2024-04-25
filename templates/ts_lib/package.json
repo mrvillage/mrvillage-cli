@@ -1,9 +1,13 @@
 {
+  "name": "$$-cli-package-name-$$",
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "rollup -c && tsc"
+  },
+  "repository": {
+    "url": "https://github.com/$$-cli-org-name-$$/$$-cli-repo-name-$$"
   },
   "types": "./lib/index.d.ts",
   "main": "./cjs/index.cjs",

@@ -9,6 +9,7 @@ use crate::{
     consts::{
         template::{DEFAULT_LEPTOS, TS_LIB},
         template_files::{CLIPPY_CONFIG, PRETTIERRC, REMIX_ESLINTRC, RUSTFMT_CONFIG},
+        DEFAULT_ORG,
     },
     traits::handle::Handle,
     var_name,
@@ -101,6 +102,8 @@ pub enum TemplatesNew {
         repo: Option<String>,
         #[arg(short, long)]
         org: Option<String>,
+        #[arg(short, long)]
+        pkg_name: String,
     },
 }
 
@@ -161,6 +164,16 @@ fn replace_rust_params(
         )
 }
 
+fn replace_ts_params(
+    text: &str,
+    name: &str,
+    repo: &Option<String>,
+    org: &Option<String>,
+    pkg_name: &str,
+) -> String {
+    replace_default_params(text, name, repo, org).replace(var_name!("package-name"), pkg_name)
+}
+
 fn replace_default_params(
     text: &str,
     name: &str,
@@ -190,7 +203,7 @@ impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
             Self::New(command) => match command {
-                TemplatesNew::AdventOfCode2022Rust { day, dir, git } => {
+                TemplatesNew::AdventOfCode2022Rust { day, dir, .. } => {
                     let dir = if let Some(dir) = dir {
                         format!(
                             "{}/{}/{}",
@@ -209,7 +222,7 @@ impl Handle for Commands {
                                 format!("day-{}", &day.to_string()).as_str(),
                             )
                         },
-                        *git,
+                        None,
                     )
                 },
                 TemplatesNew::RustBin {
@@ -221,8 +234,15 @@ impl Handle for Commands {
                     org,
                 } => crate::consts::template::RUST_BIN.write(
                     std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_rust_params(i, name, &bin, &repo, &org),
-                    *git,
+                    |i| replace_rust_params(i, name, bin, repo, org),
+                    if git.unwrap_or(crate::consts::template::RUST_BIN.git) {
+                        Some((
+                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                        ))
+                    } else {
+                        None
+                    },
                 ),
                 TemplatesNew::RustLib {
                     name,
@@ -232,8 +252,15 @@ impl Handle for Commands {
                     org,
                 } => crate::consts::template::RUST_LIB.write(
                     std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_rust_params(i, name, &None, &repo, &org),
-                    *git,
+                    |i| replace_rust_params(i, name, &None, repo, org),
+                    if git.unwrap_or(crate::consts::template::RUST_LIB.git) {
+                        Some((
+                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                        ))
+                    } else {
+                        None
+                    },
                 ),
                 TemplatesNew::RemixPages {
                     name,
@@ -255,7 +282,11 @@ impl Handle for Commands {
                             )
                             .replace(var_name!("primary-color"), color.as_str())
                     },
-                    *git,
+                    if git.unwrap_or(crate::consts::template::REMIX_PAGES.git) {
+                        Some((DEFAULT_ORG, name))
+                    } else {
+                        None
+                    },
                 ),
                 TemplatesNew::Leptos {
                     name,
@@ -266,7 +297,14 @@ impl Handle for Commands {
                 } => DEFAULT_LEPTOS.write(
                     std::path::Path::new(&dir.dir).join(name),
                     |i| replace_rust_params(i, name, &None, repo, org),
-                    *git,
+                    if git.unwrap_or(crate::consts::template::DEFAULT_LEPTOS.git) {
+                        Some((
+                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                        ))
+                    } else {
+                        None
+                    },
                 ),
                 TemplatesNew::TsLib {
                     name,
@@ -274,10 +312,18 @@ impl Handle for Commands {
                     git,
                     repo,
                     org,
+                    pkg_name,
                 } => TS_LIB.write(
                     std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_default_params(i, name, repo, org),
-                    *git,
+                    |i| replace_ts_params(i, name, repo, org, pkg_name),
+                    if git.unwrap_or(crate::consts::template::TS_LIB.git) {
+                        Some((
+                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                        ))
+                    } else {
+                        None
+                    },
                 ),
             },
             Self::Update(command) => match command {

@@ -21,10 +21,9 @@ impl Template {
         &self,
         dir: PathBuf,
         interpolator: impl Fn(&str) -> String,
-        git: Option<bool>,
+        git: Option<(&str, &str)>,
     ) -> anyhow::Result<()> {
         println!("Creating {} project in {}", self.name, dir.display());
-        let git = git.unwrap_or(self.git);
         if dir.exists() {
             return Err(anyhow::anyhow!("That directory already exists!"));
         }
@@ -45,7 +44,7 @@ impl Template {
         &self,
         dir_path: &Path,
         interpolator: &impl Fn(&str) -> String,
-        git: bool,
+        git: Option<(&str, &str)>,
     ) -> anyhow::Result<()> {
         let dirs = flatten_dir(&self.dir);
         for i in dirs.iter() {
@@ -64,10 +63,12 @@ impl Template {
         for i in self.config_files.iter() {
             i.file.write(&dir_path.join(i.dir), interpolator)?;
         }
-        if git {
+        if git.is_some() {
             let sh = Shell::new()?;
             sh.change_dir(dir_path);
+            let (org, repo) = git.unwrap();
             quiet_cmd!(sh, "git init").run()?;
+            quiet_cmd!(sh, "git remote add origin git@github.com:{org}/{repo}.git").run()?;
         }
         Ok(())
     }
