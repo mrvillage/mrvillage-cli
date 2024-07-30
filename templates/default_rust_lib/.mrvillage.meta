@@ -4,6 +4,6 @@ Required parameters
 Required template files
 - Cargo.toml
 - clippy.toml
-- rustfmt.tom
+- rustfmt.toml
 - rust.gitignore
 - default-mrvillage.toml
