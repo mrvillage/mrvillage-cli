@@ -2,7 +2,7 @@
 name = "mrvillage-cli"
 version = "0.1.16"
 edition = "2021"
-include = ["/templates", "/src"]
+include = ["/templates", "/src", "build.rs"]
 description = "My personal CLI"
 license = "MIT"
 repository = "https://github.com/mrvillage/mrvillage-cli"
