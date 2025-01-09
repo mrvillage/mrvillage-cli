@@ -2,14 +2,13 @@ use std::{collections::HashMap, path::Path};
 
 use toml::Value;
 
-use crate::{template_file_marker, var_name};
-
 use super::config::Config;
+use crate::{template_file_marker, var_name};
 
 #[derive(Debug)]
 pub struct TemplateFile {
-    pub name: &'static str,
-    pub marker: &'static str,
+    pub name:    &'static str,
+    pub marker:  &'static str,
     pub content: &'static str,
 }
 
@@ -23,8 +22,17 @@ impl TemplateFile {
     }
 
     pub fn write(&self, dir: &Path, interpolator: impl Fn(&str) -> String) -> anyhow::Result<()> {
+        Self::write_name(self, dir, interpolator, self.name)
+    }
+
+    pub fn write_name(
+        &self,
+        dir: &Path,
+        interpolator: impl Fn(&str) -> String,
+        name: &str,
+    ) -> anyhow::Result<()> {
         std::fs::create_dir_all(dir)?;
-        let path = dir.join(self.name);
+        let path = dir.join(name);
         std::fs::write(path, interpolator(self.content))?;
         Ok(())
     }
@@ -72,7 +80,7 @@ impl TemplateFile {
 
 #[derive(Debug)]
 pub struct TemplateFileWrapper {
-    pub dir: &'static str,
+    pub dir:  &'static str,
     pub file: &'static TemplateFile,
 }
 

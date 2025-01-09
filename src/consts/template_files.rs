@@ -71,3 +71,6 @@ pub const RUST_ACTION: TemplateFile = TemplateFile::new(
     "rust-action",
     include_template_file!("rust-action.yaml"),
 );
+
+pub const TEX_DOC: TemplateFile =
+    TemplateFile::new("main.tex", "tex-doc", include_template_file!("tex-doc.tex"));

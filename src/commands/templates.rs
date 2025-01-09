@@ -40,71 +40,74 @@ pub enum TemplatesNew {
     RustBin {
         name: String,
         #[command(flatten)]
-        dir: HasDir,
+        dir:  HasDir,
         #[arg(short, long)]
-        git: Option<bool>,
+        git:  Option<bool>,
         #[arg(short, long)]
-        bin: Option<String>,
+        bin:  Option<String>,
         #[arg(short, long)]
         repo: Option<String>,
         #[arg(short, long)]
-        org: Option<String>,
+        org:  Option<String>,
     },
     #[command(about = "Create a new project with the Rust Library template")]
     RustLib {
         name: String,
         #[command(flatten)]
-        dir: HasDir,
+        dir:  HasDir,
         #[arg(short, long)]
-        git: Option<bool>,
+        git:  Option<bool>,
         #[arg(short, long)]
         repo: Option<String>,
         #[arg(short, long)]
-        org: Option<String>,
+        org:  Option<String>,
     },
     #[command(about = "Create a new project with the Remix with Cloudflare Pages template")]
     RemixPages {
-        name: String,
+        name:             String,
         #[arg(short = 'a', long = "api-domain")]
-        api_domain: String,
+        api_domain:       String,
         #[arg(short = 'n', long = "meta-name")]
-        meta_name: String,
+        meta_name:        String,
         #[arg(short = 'e', long = "meta-description")]
         meta_description: String,
         #[arg(short, long)]
-        color: String,
+        color:            String,
         #[command(flatten)]
-        dir: HasDir,
+        dir:              HasDir,
         #[arg(short, long)]
-        git: Option<bool>,
+        git:              Option<bool>,
     },
     #[command(about = "Create a new project with the default Leptos template")]
     Leptos {
         name: String,
         #[command(flatten)]
-        dir: HasDir,
+        dir:  HasDir,
         #[arg(short, long)]
-        git: Option<bool>,
+        git:  Option<bool>,
         #[arg(short, long)]
         repo: Option<String>,
         #[arg(short, long)]
-        org: Option<String>,
+        org:  Option<String>,
     },
     #[command(about = "Create a new project with the default TypeScript library templates")]
     #[command(name = "ts-lib")]
     TsLib {
-        name: String,
+        name:     String,
         #[command(flatten)]
-        dir: HasDir,
+        dir:      HasDir,
         #[arg(short, long)]
-        git: Option<bool>,
+        git:      Option<bool>,
         #[arg(short, long)]
-        repo: Option<String>,
+        repo:     Option<String>,
         #[arg(short, long)]
-        org: Option<String>,
+        org:      Option<String>,
         #[arg(short, long)]
         pkg_name: String,
     },
+    #[command(about = "Create a new tex document")]
+    #[command(name = "tex")]
+    TexDoc { file: String },
 }
 
 #[derive(Debug, Subcommand)]
@@ -114,28 +117,28 @@ pub enum TemplatesUpdate {
         #[arg(short, long, default_value = "false")]
         recurse: bool,
         #[command(flatten)]
-        dir: HasDir,
+        dir:     HasDir,
     },
     #[command(about = "Update .prettierrc.toml files")]
     Prettier {
         #[arg(short, long, default_value = "false")]
         recurse: bool,
         #[command(flatten)]
-        dir: HasDir,
+        dir:     HasDir,
     },
     #[command(about = "Update Remix .eslintrc.json files")]
     RemixEslint {
         #[arg(short, long, default_value = "false")]
         recurse: bool,
         #[command(flatten)]
-        dir: HasDir,
+        dir:     HasDir,
     },
     #[command(about = "Update rustfmt.toml files")]
     Rustfmt {
         #[arg(short, long, default_value = "false")]
         recurse: bool,
         #[command(flatten)]
-        dir: HasDir,
+        dir:     HasDir,
     },
 }
 
@@ -202,143 +205,172 @@ fn replace_default_params(
 impl Handle for Commands {
     fn handle(&self) -> anyhow::Result<()> {
         match self {
-            Self::New(command) => match command {
-                TemplatesNew::AdventOfCode2022Rust { day, dir, .. } => {
-                    let dir = if let Some(dir) = dir {
-                        format!(
-                            "{}/{}/{}",
-                            std::env::current_dir().unwrap().display(),
-                            dir,
-                            day
+            Self::New(command) => {
+                match command {
+                    TemplatesNew::AdventOfCode2022Rust { day, dir, .. } => {
+                        let dir = if let Some(dir) = dir {
+                            format!(
+                                "{}/{}/{}",
+                                std::env::current_dir().unwrap().display(),
+                                dir,
+                                day
+                            )
+                        } else {
+                            format!("{}/day-{}", std::env::current_dir().unwrap().display(), day)
+                        };
+                        crate::consts::template::ADVENT_OF_CODE_2022_RUST.write(
+                            std::path::Path::new(&dir).to_path_buf(),
+                            |i| {
+                                i.replace(
+                                    var_name!("crate-name"),
+                                    format!("day-{}", &day.to_string()).as_str(),
+                                )
+                            },
+                            None,
                         )
-                    } else {
-                        format!("{}/day-{}", std::env::current_dir().unwrap().display(), day)
-                    };
-                    crate::consts::template::ADVENT_OF_CODE_2022_RUST.write(
-                        std::path::Path::new(&dir).to_path_buf(),
-                        |i| {
-                            i.replace(
-                                var_name!("crate-name"),
-                                format!("day-{}", &day.to_string()).as_str(),
+                    },
+                    TemplatesNew::RustBin {
+                        name,
+                        dir,
+                        git,
+                        bin,
+                        repo,
+                        org,
+                    } => {
+                        crate::consts::template::RUST_BIN.write(
+                            std::path::Path::new(&dir.dir).join(name),
+                            |i| replace_rust_params(i, name, bin, repo, org),
+                            if git.unwrap_or(crate::consts::template::RUST_BIN.git) {
+                                Some((
+                                    org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                                    repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                                ))
+                            } else {
+                                None
+                            },
+                        )
+                    },
+                    TemplatesNew::RustLib {
+                        name,
+                        dir,
+                        git,
+                        repo,
+                        org,
+                    } => {
+                        crate::consts::template::RUST_LIB.write(
+                            std::path::Path::new(&dir.dir).join(name),
+                            |i| replace_rust_params(i, name, &None, repo, org),
+                            if git.unwrap_or(crate::consts::template::RUST_LIB.git) {
+                                Some((
+                                    org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                                    repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                                ))
+                            } else {
+                                None
+                            },
+                        )
+                    },
+                    TemplatesNew::RemixPages {
+                        name,
+                        dir,
+                        api_domain,
+                        meta_name,
+                        meta_description,
+                        color,
+                        git,
+                    } => {
+                        crate::consts::template::REMIX_PAGES.write(
+                            std::path::Path::new(&dir.dir).join(name),
+                            |i| {
+                                i.replace(var_name!("app-name"), name.as_str())
+                                    .replace(var_name!("api-domain"), api_domain.as_str())
+                                    .replace(var_name!("meta-tags-name"), meta_name.as_str())
+                                    .replace(
+                                        var_name!("meta-tags-description"),
+                                        meta_description.as_str(),
+                                    )
+                                    .replace(var_name!("primary-color"), color.as_str())
+                            },
+                            if git.unwrap_or(crate::consts::template::REMIX_PAGES.git) {
+                                Some((DEFAULT_ORG, name))
+                            } else {
+                                None
+                            },
+                        )
+                    },
+                    TemplatesNew::Leptos {
+                        name,
+                        dir,
+                        git,
+                        repo,
+                        org,
+                    } => {
+                        DEFAULT_LEPTOS.write(
+                            std::path::Path::new(&dir.dir).join(name),
+                            |i| replace_rust_params(i, name, &None, repo, org),
+                            if git.unwrap_or(crate::consts::template::DEFAULT_LEPTOS.git) {
+                                Some((
+                                    org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                                    repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                                ))
+                            } else {
+                                None
+                            },
+                        )
+                    },
+                    TemplatesNew::TsLib {
+                        name,
+                        dir,
+                        git,
+                        repo,
+                        org,
+                        pkg_name,
+                    } => {
+                        TS_LIB.write(
+                            std::path::Path::new(&dir.dir).join(name),
+                            |i| replace_ts_params(i, name, repo, org, pkg_name),
+                            if git.unwrap_or(crate::consts::template::TS_LIB.git) {
+                                Some((
+                                    org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
+                                    repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
+                                ))
+                            } else {
+                                None
+                            },
+                        )
+                    },
+                    TemplatesNew::TexDoc { file } => {
+                        if file.ends_with(".tex") {
+                            crate::consts::template_files::TEX_DOC.write_name(
+                                &std::env::current_dir().unwrap(),
+                                ToString::to_string,
+                                file,
                             )
-                        },
-                        None,
-                    )
-                },
-                TemplatesNew::RustBin {
-                    name,
-                    dir,
-                    git,
-                    bin,
-                    repo,
-                    org,
-                } => crate::consts::template::RUST_BIN.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_rust_params(i, name, bin, repo, org),
-                    if git.unwrap_or(crate::consts::template::RUST_BIN.git) {
-                        Some((
-                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
-                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
-                        ))
-                    } else {
-                        None
-                    },
-                ),
-                TemplatesNew::RustLib {
-                    name,
-                    dir,
-                    git,
-                    repo,
-                    org,
-                } => crate::consts::template::RUST_LIB.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_rust_params(i, name, &None, repo, org),
-                    if git.unwrap_or(crate::consts::template::RUST_LIB.git) {
-                        Some((
-                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
-                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
-                        ))
-                    } else {
-                        None
-                    },
-                ),
-                TemplatesNew::RemixPages {
-                    name,
-                    dir,
-                    api_domain,
-                    meta_name,
-                    meta_description,
-                    color,
-                    git,
-                } => crate::consts::template::REMIX_PAGES.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| {
-                        i.replace(var_name!("app-name"), name.as_str())
-                            .replace(var_name!("api-domain"), api_domain.as_str())
-                            .replace(var_name!("meta-tags-name"), meta_name.as_str())
-                            .replace(
-                                var_name!("meta-tags-description"),
-                                meta_description.as_str(),
+                        } else {
+                            crate::consts::template_files::TEX_DOC.write_name(
+                                &std::env::current_dir().unwrap(),
+                                ToString::to_string,
+                                &format!("{}.tex", file),
                             )
-                            .replace(var_name!("primary-color"), color.as_str())
+                        }
                     },
-                    if git.unwrap_or(crate::consts::template::REMIX_PAGES.git) {
-                        Some((DEFAULT_ORG, name))
-                    } else {
-                        None
-                    },
-                ),
-                TemplatesNew::Leptos {
-                    name,
-                    dir,
-                    git,
-                    repo,
-                    org,
-                } => DEFAULT_LEPTOS.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_rust_params(i, name, &None, repo, org),
-                    if git.unwrap_or(crate::consts::template::DEFAULT_LEPTOS.git) {
-                        Some((
-                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
-                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
-                        ))
-                    } else {
-                        None
-                    },
-                ),
-                TemplatesNew::TsLib {
-                    name,
-                    dir,
-                    git,
-                    repo,
-                    org,
-                    pkg_name,
-                } => TS_LIB.write(
-                    std::path::Path::new(&dir.dir).join(name),
-                    |i| replace_ts_params(i, name, repo, org, pkg_name),
-                    if git.unwrap_or(crate::consts::template::TS_LIB.git) {
-                        Some((
-                            org.as_ref().map(|x| x.as_str()).unwrap_or(DEFAULT_ORG),
-                            repo.as_ref().map(|x| x.as_str()).unwrap_or(name.as_str()),
-                        ))
-                    } else {
-                        None
-                    },
-                ),
+                }
             },
-            Self::Update(command) => match command {
-                TemplatesUpdate::Clippy { recurse, dir } => {
-                    CLIPPY_CONFIG.update(Path::new(&dir.dir), *recurse)
-                },
-                TemplatesUpdate::Prettier { recurse, dir } => {
-                    PRETTIERRC.update(Path::new(&dir.dir), *recurse)
-                },
-                TemplatesUpdate::RemixEslint { recurse, dir } => {
-                    REMIX_ESLINTRC.update(Path::new(&dir.dir), *recurse)
-                },
-                TemplatesUpdate::Rustfmt { recurse, dir } => {
-                    RUSTFMT_CONFIG.update(Path::new(&dir.dir), *recurse)
-                },
+            Self::Update(command) => {
+                match command {
+                    TemplatesUpdate::Clippy { recurse, dir } => {
+                        CLIPPY_CONFIG.update(Path::new(&dir.dir), *recurse)
+                    },
+                    TemplatesUpdate::Prettier { recurse, dir } => {
+                        PRETTIERRC.update(Path::new(&dir.dir), *recurse)
+                    },
+                    TemplatesUpdate::RemixEslint { recurse, dir } => {
+                        REMIX_ESLINTRC.update(Path::new(&dir.dir), *recurse)
+                    },
+                    TemplatesUpdate::Rustfmt { recurse, dir } => {
+                        RUSTFMT_CONFIG.update(Path::new(&dir.dir), *recurse)
+                    },
+                }
             },
         }
     }
